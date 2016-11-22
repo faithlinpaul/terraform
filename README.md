@@ -25,6 +25,7 @@ tf_aws_secret_key = <SECRETKEY>
 
 `ssh-keygen -b 2048 -C "youremail@somewhere.com"`
 
+6. Add chefserver admin private key to `chef_admin_key_path` 
 
 
 #### Usage ####
@@ -33,7 +34,6 @@ tf_aws_secret_key = <SECRETKEY>
 terraform plan -var-file="./keys/aws.tfvars" 
 terraform apply -var-file="./keys/aws.tfvars" 
 ```
-
 
 
 #### TODO tasks: ####
