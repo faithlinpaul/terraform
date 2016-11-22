@@ -34,19 +34,3 @@ tf_aws_secret_key = <SECRETKEY>
 terraform plan -var-file="./keys/aws.tfvars" 
 terraform apply -var-file="./keys/aws.tfvars" 
 ```
-
-
-#### TODO tasks: ####
-
-- [ ] All setup should be production ready. Parameterize hardcoded values.
-- [ ] Close 80 and 443 ports inbound and close down egress.
-- [ ] Auto configure jenkins port 50000 for slave
-- [ ] Avoid pulling ubuntu:14.04
-- [ ] Create jenkins user on jenkins slave
-- [ ] Give docker and git access only in sudoers for user jenkins by chef cookbook
-- [ ] Jenkins plugin to switch between users to pull in docker images
-- [ ] Modify jenkins file to update slave info as parameter.
-- [ ] Modify jenkins job to update base image info in all other tool build jobs
-- [ ] Copy jenkins Dockerfile from dockerhub and use it to build our own customized jenkins docker image.
-- [ ] When hosting Internal-jenkins docker image auto configure secrets key
-
