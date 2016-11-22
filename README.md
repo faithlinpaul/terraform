@@ -13,10 +13,13 @@
 2. Create file  ./keys/aws.tfvars
 
 3. Add aws key, secret from to  ./keys/aws.tfvars
-`tf_aws_access_key = <ACCESSKEY>`
-`tf_aws_secret_key = <SECRETKEY>`
 
-4. Repeat step 3 for `jenkinsslave_aws_ecr_access_key and jenkinsslave_aws_ecr_secret_key`
+```
+tf_aws_access_key = <ACCESSKEY>
+tf_aws_secret_key = <SECRETKEY>
+```
+
+4. Repeat step 3 for `jenkinsslave_aws_ecr_access_key` and `jenkinsslave_aws_ecr_secret_key`
 
 5. Create ssh key pair for chef provisioning, save both pem and pub in ./keys
 
