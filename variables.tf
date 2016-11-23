@@ -95,3 +95,7 @@ variable "chef_server_public_ip" {
 variable "chef_user_name" {
   default = "xebiadev"
 }
+
+variable "chef_server_ipentry" {
+  default = "${format("%s %s %s %s", "sudo sh -c \"echo '", var.chef_server_public_ip , var.chef_server_name "' >> /etc/hosts\"")}"
+}

@@ -7,12 +7,11 @@
 
 #### Prerequisites ####
 
-1. Create keys folder
-`mkdir ./keys`
+1. Create keys folder `mkdir ./keys`
 
-2. Create file  ./keys/aws.tfvars
+2. Create file  `touch ./keys/aws.tfvars`
 
-3. Add aws key, secret from to  ./keys/aws.tfvars
+3. Add aws key, secret from your aws account and save to `./keys/aws.tfvars`
 
 ```
 tf_aws_access_key = <ACCESSKEY>

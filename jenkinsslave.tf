@@ -60,7 +60,7 @@ resource "aws_instance" "JenkinsSlave" {
 
       "curl -O https://bootstrap.pypa.io/get-pip.py",
       "sudo python2.7 get-pip.py",
-      "rm get-pip.py",
+      "rm -f get-pip.py",
       "sudo pip install awscli",
 
       # Configure docker git
@@ -73,22 +73,42 @@ resource "aws_instance" "JenkinsSlave" {
       "sudo apt-get install docker-engine -y",
       "sudo service docker start",
 
+      #Allow jenkins to run docker
+      "sudo groupadd -g 1001 jenkins",
+
+      "sudo useradd -d /var/jenkins_home -u 1001 -g 1001 -m -s /bin/bash jenkins",
+      "sudo echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker aws' | tee -a /etc/sudoers",
+
       #git
       "sudo apt-get install git -y",
 
       #Needed for upstream push
       "sudo apt-get install csh -y",
 
-      #Configure with jenkins
-      #TODO:
-      # "sudo -s jenkins aws configure set aws_access_key_id ${var.jenkinsslave_aws_ecr_access_key}",
-      # "sudo -s jenkins aws configure set aws_secret_access_key ${var.jenkinsslave_aws_ecr_secret_key}",
-      # "sudo -s jenkins aws configure set default.region ${var.aws_region}",      
-      "aws configure set aws_access_key_id ${var.jenkinsslave_aws_ecr_access_key}",
-
-      "aws configure set aws_secret_access_key ${var.jenkinsslave_aws_ecr_secret_key}",
-      "aws configure set default.region ${var.aws_region}",
+      "sudo -H -u jenkins /bin/bash -c ' aws configure set aws_access_key_id ${var.jenkinsslave_aws_ecr_access_key}'",
+      "sudo -H -u jenkins /bin/bash -c 'aws configure set aws_secret_access_key ${var.jenkinsslave_aws_ecr_secret_key}'",
+      "sudo -H -u jenkins /bin/bash -c 'aws configure set default.region ${var.aws_region}'",
     ]
+
+    #Configure with jenkins
+
+    #sudo -H -u jenkins /bin/bash -c 'sudo docker build /var/jenkins_home'
+
+    #sudo -H -u jenkins /bin/bash -c 'sudo docker build /var/jenkins_home'
+
+    # "sudo groupadd docker",
+
+    # "sudo usermod -aG docker $USER",
+
+    #"sudo  GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1" "
+
+    #sudo ufw allow 2375/tcp
+
+    # sudo nano /etc/default/ufw  DEFAULT_FORWARD_POLICY="ACCEPT"
+
+    # sudo ufw reload
+
+    #sudo ufw allow 2375/tcp
 
     # Configure java::oracle::8
   }

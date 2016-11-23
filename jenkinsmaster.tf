@@ -15,12 +15,18 @@ resource "aws_instance" "JenkinsMaster" {
   subnet_id              = "${aws_subnet.default.id}"
   provisioner "remote-exec" {
     inline = [
-      "sudo sh -c \"echo '35.163.78.214 chefserver' >> /etc/hosts\"",
+      #"sudo sh -c \"echo '35.163.78.214 chefserver' >> /etc/hosts\"",
+      "${var.chef_server_ipentry}",
+
       "sudo apt-get update -y",
     ]
   }
   tags {
     Name = "MGMT_TOOLING_JENKINS_MASTER_TERRAFROM"
+
+    # Name = "Group:MGMT_TOOLING;Type:JENKINS_MASTER"
+
+    # Type = "JENKINS_MASTER"
   }
   provisioner "chef" {
     environment = "${var.chef_env_name}"
