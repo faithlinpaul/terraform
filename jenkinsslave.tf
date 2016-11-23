@@ -35,7 +35,8 @@ resource "aws_instance" "JenkinsSlave" {
 
     #Todo: use chef cookbook to update sudoers file
     # run_list = ["java::oracle", "git::default", "docker::default", "awscli::default", "sudoers" ]
-    run_list = ["maven::default"]
+    #run_list = ["maven::default", "git", "my_docker", "my_users"] 
+    run_list = ["maven::default", "git", "my_docker"] 
 
     node_name = "JenkinsSlave"
 
@@ -57,7 +58,6 @@ resource "aws_instance" "JenkinsSlave" {
 
       # Configure awscli
       "sudo apt-get install python2.7 -y",
-
       "curl -O https://bootstrap.pypa.io/get-pip.py",
       "sudo python2.7 get-pip.py",
       "rm -f get-pip.py",
@@ -73,11 +73,10 @@ resource "aws_instance" "JenkinsSlave" {
       "sudo apt-get install docker-engine -y",
       "sudo service docker start",
 
-      #Allow jenkins to run docker
-      "sudo groupadd -g 1001 jenkins",
-
-      "sudo useradd -d /var/jenkins_home -u 1001 -g 1001 -m -s /bin/bash jenkins",
-      "sudo echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/java' | sudo tee -a /etc/sudoers",
+      ####Allow jenkins to run docker  || DONE by my_users role
+      # "sudo groupadd -g 1001 jenkins",
+      # "sudo useradd -d /home/jenkins -u 1001 -g 1001 -m -s /bin/bash jenkins",
+      # "sudo echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/java' | sudo tee -a /etc/sudoers",
 
       #git
       "sudo apt-get install git -y",
@@ -87,19 +86,21 @@ resource "aws_instance" "JenkinsSlave" {
 
       #setup aws ecr access key for jenkins user
       "sudo -H -u jenkins /bin/bash -c 'aws configure set aws_access_key_id ${var.jenkinsslave_aws_ecr_access_key}'",
-
       "sudo -H -u jenkins /bin/bash -c 'aws configure set aws_secret_access_key ${var.jenkinsslave_aws_ecr_secret_key}'",
       "sudo -H -u jenkins /bin/bash -c 'aws configure set default.region ${var.aws_region}'",
 
       #Java slave swarm plugin
-      "sudo wget https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/2.1/swarm-client-2.1-jar-with-dependencies.jar -P /var/jenkins_home ",
+      "sudo wget https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/2.1/swarm-client-2.1-jar-with-dependencies.jar -P /home/jenkins ",
 
-      "sudo -H -u jenkins /usr/bin/java -Xmx256m -jar /var/jenkins_home/swarm-client-2.1-jar-with-dependencies.jar -master http://${aws_instance.JenkinsMaster.private_ip}:${var.jenkinsmaster_port} -executors ${var.jenkins_slave_executors} -username ${var.jenkins_admin_user_name} -password ${var.jenkins_admin_password} -name slave1 &> /var/log/jenkins-slave-swarm.log &",
+      "sudo - b -H -u jenkins /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar -master http://${aws_instance.JenkinsMaster.private_ip}:${var.jenkinsmaster_port} -executors ${var.jenkins_slave_executors} -username ${var.jenkins_admin_user_name} -password ${var.jenkins_admin_password} -name slave &>  ./jenkins-slave-swarm.log &",
+
+      ###### WORKS  sudo -b -H -u jenkins /usr/bin/java -Xmx256m -jar /var/jenkins_home/swarm-client-2.1-jar-with-dependencies.jar -master http://10.0.1.35:8080 -fsroot /home/jenkins -executors 5 -username admin -password Tesco@Xebia -name slave  &> ./jenkins-slave-swarm.log &
+      #  sudo -b -H -u jenkins /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar -master http://10.0.1.35:8080 -fsroot /home/jenkins -executors 5 -username admin -password Tesco@Xebia -name slave  | sudo tee -a /var/log/jenkins-slave-swarm.log 
     ]
 
-    #Configure with jenkins
+    #########Configure with jenkins
 
-    #sudo -H -u jenkins /bin/bash -c 'sudo docker build /var/jenkins_home'
+    ########## sudo -H -u jenkins /bin/bash -c 'sudo docker build /home/jenkins'
 
     # "sudo groupadd docker",
 
