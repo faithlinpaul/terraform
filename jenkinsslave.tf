@@ -77,7 +77,7 @@ resource "aws_instance" "JenkinsSlave" {
       "sudo groupadd -g 1001 jenkins",
 
       "sudo useradd -d /var/jenkins_home -u 1001 -g 1001 -m -s /bin/bash jenkins",
-      "sudo echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker aws' | tee -a /etc/sudoers",
+      "sudo echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/java' | sudo tee -a /etc/sudoers",
 
       #git
       "sudo apt-get install git -y",
@@ -85,14 +85,19 @@ resource "aws_instance" "JenkinsSlave" {
       #Needed for upstream push
       "sudo apt-get install csh -y",
 
-      "sudo -H -u jenkins /bin/bash -c ' aws configure set aws_access_key_id ${var.jenkinsslave_aws_ecr_access_key}'",
+      #setup aws ecr access key for jenkins user
+      "sudo -H -u jenkins /bin/bash -c 'aws configure set aws_access_key_id ${var.jenkinsslave_aws_ecr_access_key}'",
+
       "sudo -H -u jenkins /bin/bash -c 'aws configure set aws_secret_access_key ${var.jenkinsslave_aws_ecr_secret_key}'",
       "sudo -H -u jenkins /bin/bash -c 'aws configure set default.region ${var.aws_region}'",
+
+      #Java slave swarm plugin
+      "sudo wget https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/2.1/swarm-client-2.1-jar-with-dependencies.jar -P /var/jenkins_home ",
+
+      "sudo -H -u jenkins /usr/bin/java -Xmx256m -jar /var/jenkins_home/swarm-client-2.1-jar-with-dependencies.jar -master http://${aws_instance.JenkinsMaster.private_ip}:${var.jenkinsmaster_port} -executors ${var.jenkins_slave_executors} -username ${var.jenkins_admin_user_name} -password ${var.jenkins_admin_password} -name slave1 &> /var/log/jenkins-slave-swarm.log &",
     ]
 
     #Configure with jenkins
-
-    #sudo -H -u jenkins /bin/bash -c 'sudo docker build /var/jenkins_home'
 
     #sudo -H -u jenkins /bin/bash -c 'sudo docker build /var/jenkins_home'
 
@@ -112,22 +117,6 @@ resource "aws_instance" "JenkinsSlave" {
 
     # Configure java::oracle::8
   }
-
-  #   provisioner "remote-exec" {
-
-  #   inline = [
-
-  #     # Configure jenkins slave to talk to master
-
-  #     "sudo apt-get update",
-
-  #     "sudo wget https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/2.1/swarm-client-2.1-jar-with-dependencies.jar",
-
-  #     "sudo java -s jenkins -Xmx256m -jar swarm-client-2.1-jar-with-dependencies.jar -master http://${aws_instance.JenkinsMaster.private_ip}:${var.jenkinsmaster_port} -executors 2 -username admin -password admin -name slave1 &> swarm.log &",
-
-  #   ]
-
-  # }
 
   # provisioner "remote-exec" {
 

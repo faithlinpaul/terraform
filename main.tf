@@ -37,7 +37,7 @@ resource "aws_subnet" "default" {
 
 # Our default security group
 resource "aws_security_group" "jenkins_master" {
-  name        = "MGMT_PUBLIC_TOOLING"
+  name        = "MGMT_PUBLIC_TOOLING_JENKINS_MASTER"
   description = "Used in the terraform"
   vpc_id      = "${aws_vpc.default.id}"
 
@@ -70,22 +70,13 @@ resource "aws_security_group" "jenkins_master" {
     cidr_blocks = ["10.0.1.0/26"] #TOTEST: Allow slaves only from within the Internal VPC
   }
 
-  # egress {
-
-
-  #   from_port   = 0
-
-
-  #   to_port     = 0
-
-
-  #   protocol    = "-1"
-
-
-  #   cidr_blocks = ["0.0.0.0/0"]
-
-
-  # }
+  #TODO: restrict only 80,443
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   tags {
     Name = "MGMT_PUBLIC_TOOLING_JENKINS_MASTER"
@@ -93,7 +84,7 @@ resource "aws_security_group" "jenkins_master" {
 }
 
 resource "aws_security_group" "jenkins_slave" {
-  name        = "MGMT_PUBLIC_TOOLING"
+  name        = "MGMT_PUBLIC_TOOLING_JENKINS_SLAVE"
   description = "Used in the terraform"
   vpc_id      = "${aws_vpc.default.id}"
 
@@ -104,6 +95,14 @@ resource "aws_security_group" "jenkins_slave" {
     cidr_blocks = ["0.0.0.0/0"]
 
     #cidr_blocks = ["10.0.1.0/26"]  #TOTEST: Allow ssh only from within the Internal VPC jumpbox
+  }
+
+  #TODO: restrict only 80,443
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags {

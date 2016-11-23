@@ -33,3 +33,7 @@ tf_aws_secret_key = <SECRETKEY>
 terraform plan -var-file="./keys/aws.tfvars" 
 terraform apply -var-file="./keys/aws.tfvars" 
 ```
+
+      
+      
+"${var.chef_server_ipentry}",
