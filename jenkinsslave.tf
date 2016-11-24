@@ -36,7 +36,7 @@ resource "aws_instance" "JenkinsSlave" {
     #Todo: use chef cookbook to update sudoers file
     # run_list = ["java::oracle", "git::default", "docker::default", "awscli::default", "sudoers" ]
     #run_list = ["maven::default", "git", "my_docker", "my_users"] 
-    run_list = ["maven::default", "git", "my_docker"] 
+    run_list = ["maven::default", "git", "my_docker"]
 
     node_name = "JenkinsSlave"
 
@@ -58,26 +58,21 @@ resource "aws_instance" "JenkinsSlave" {
 
       # Configure awscli
       "sudo apt-get install python2.7 -y",
+
       "curl -O https://bootstrap.pypa.io/get-pip.py",
       "sudo python2.7 get-pip.py",
       "rm -f get-pip.py",
       "sudo pip install awscli",
 
-      # Configure docker git
-      "sudo apt-get install apt-transport-https ca-certificates -y",
-
-      "sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D -y",
-      "echo 'deb https://apt.dockerproject.org/repo ubuntu-trusty main' | sudo tee /etc/apt/sources.list.d/docker.list",
-      "sudo apt-get update",
-      "sudo apt-get install linux-image-extra-$(uname -r) linux-image-extra-virtual -y",
-      "sudo apt-get install docker-engine -y",
-      "sudo service docker start",
-
       ####Allow jenkins to run docker  || DONE by my_users role
-      # "sudo groupadd -g 1001 jenkins",
-      # "sudo useradd -d /home/jenkins -u 1001 -g 1001 -m -s /bin/bash jenkins",
-      # "sudo echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/java' | sudo tee -a /etc/sudoers",
+      "sudo groupadd -g 1001 jenkins",
 
+      "sudo useradd -d /home/jenkins -u 1001 -g 1001 -m -s /bin/bash jenkins",
+
+      ####ADD sudoers role || TODO move this to chef cookbook
+      "sudo echo 'jenkins ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/java' | sudo tee -a /etc/sudoers",
+
+      # NOT needed for aws as it is from /usr/local/bin/aws
       #git
       "sudo apt-get install git -y",
 
@@ -86,17 +81,35 @@ resource "aws_instance" "JenkinsSlave" {
 
       #setup aws ecr access key for jenkins user
       "sudo -H -u jenkins /bin/bash -c 'aws configure set aws_access_key_id ${var.jenkinsslave_aws_ecr_access_key}'",
+
       "sudo -H -u jenkins /bin/bash -c 'aws configure set aws_secret_access_key ${var.jenkinsslave_aws_ecr_secret_key}'",
       "sudo -H -u jenkins /bin/bash -c 'aws configure set default.region ${var.aws_region}'",
 
       #Java slave swarm plugin
       "sudo wget https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/2.1/swarm-client-2.1-jar-with-dependencies.jar -P /home/jenkins ",
 
-      "sudo - b -H -u jenkins /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar -master http://${aws_instance.JenkinsMaster.private_ip}:${var.jenkinsmaster_port} -executors ${var.jenkins_slave_executors} -username ${var.jenkins_admin_user_name} -password ${var.jenkins_admin_password} -name slave &>  ./jenkins-slave-swarm.log &",
-
-      ###### WORKS  sudo -b -H -u jenkins /usr/bin/java -Xmx256m -jar /var/jenkins_home/swarm-client-2.1-jar-with-dependencies.jar -master http://10.0.1.35:8080 -fsroot /home/jenkins -executors 5 -username admin -password Tesco@Xebia -name slave  &> ./jenkins-slave-swarm.log &
-      #  sudo -b -H -u jenkins /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar -master http://10.0.1.35:8080 -fsroot /home/jenkins -executors 5 -username admin -password Tesco@Xebia -name slave  | sudo tee -a /var/log/jenkins-slave-swarm.log 
+      "sudo -b -H -u jenkins /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar -master http://${aws_instance.JenkinsMaster.private_ip}:${var.jenkinsmaster_port} -executors ${var.jenkins_slave_executors} -username ${var.jenkins_admin_user_name} -password ${var.jenkins_admin_password} -name slave &>  ./jenkins-slave-swarm.log &",
     ]
+
+    # # Configure docker git
+
+    # "sudo apt-get install apt-transport-https ca-certificates -y",
+
+    # "sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D -y",
+
+    # "echo 'deb https://apt.dockerproject.org/repo ubuntu-trusty main' | sudo tee /etc/apt/sources.list.d/docker.list",
+
+    # "sudo apt-get update",
+
+    # "sudo apt-get install linux-image-extra-$(uname -r) linux-image-extra-virtual -y",
+
+    # "sudo apt-get install docker-engine -y",
+
+    # "sudo service docker start",
+
+    ###### WORKS  sudo -b -H -u jenkins /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar -master http://10.0.1.35:8080 -fsroot /home/jenkins -executors 5 -username admin -password Tesco@Xebia -name slave  &> ./jenkins-slave-swarm.log &
+
+    #  sudo -b -H -u jenkins /usr/bin/java -Xmx256m -jar /home/jenkins/swarm-client-2.1-jar-with-dependencies.jar -master http://10.0.1.35:8080 -fsroot /home/jenkins -executors 5 -username admin -password Tesco@Xebia -name slave  | sudo tee -a /var/log/jenkins-slave-swarm.log 
 
     #########Configure with jenkins
 
